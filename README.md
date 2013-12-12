@@ -70,9 +70,8 @@ end.done do |titles|
 end
 ```
 
-As methods in Ruby can only take a single block, Whenner does not support a
-`then` method yet, that would combine the `done` and `fail` methods. This might
-be implementing in the future using something like this:
+As methods in Ruby can only take a single block, Whenner has a special block
+syntax for setting both `done` and `fail` callbacks:
 
 ```ruby
 defer { async_get('http://google.com') }.then do |on|
@@ -80,6 +79,9 @@ defer { async_get('http://google.com') }.then do |on|
   on.fail { puts 'Success!' }
 end
 ```
+
+The result of `Deferred#then` is a new promise for the value of the callback
+that will be run.
 
 ### Documentation
 

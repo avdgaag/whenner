@@ -29,8 +29,12 @@ module Whenner
     # @!method always(&block)
     #   Register a callback to fire when the deferred is resolved.
     #   @return [Promise] a new promise for the return value of the block.
+    # @!method then(&block)
+    #   Register both done and fail callbacks
+    #   @return [Promise] a new promise for the return value the deferred
     def_delegators :@deferred, *%i[
-      reason value pending? fulfilled? resolved? rejected? fail done always
+      reason value pending? fulfilled? resolved? rejected?
+      fail done always then
     ]
 
     def initialize(deferred)

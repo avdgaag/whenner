@@ -2,6 +2,7 @@ require 'whenner/version'
 require 'forwardable'
 
 require 'whenner/conversions'
+require 'whenner/deferred_proxy'
 require 'whenner/callback'
 require 'whenner/deferred'
 require 'whenner/promise'

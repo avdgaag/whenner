@@ -105,6 +105,26 @@ module Whenner
       promise
     end
 
+
+    # Register a callback to be run when the deferred is fulfilled.
+    #
+    # @yieldparam [DeferredProxy] proxy
+    # @return [Promise] a new promise representing the return value
+    #   of the deferred, or -- when that return value is a promise itself
+    #   -- a promise mimicking that promise.
+    def then
+      Whenner.defer do |d|
+        proxy = DeferredProxy.new(self)
+        yield proxy
+        pdone = done(&proxy.done)
+        pfail = fail(&proxy.fail)
+        pdone.done { |v| d.fulfill(v) }
+        pdone.fail { |v| d.reject(v) }
+        pfail.done { |v| d.reject(v) }
+        pfail.fail { |v| d.reject(v) }
+      end
+    end
+
     # Register a callback to be run when the deferred is fulfilled.
     #
     # @yieldparam [Object] value

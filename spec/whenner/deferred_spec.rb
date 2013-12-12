@@ -114,11 +114,27 @@ module Whenner
         expect(new_promise).to be_fulfilled
       end
 
+      it 'returns a ne promise for a value using #then' do
+        new_promise = subject.then do |on|
+          on.done { 'foo' }
+        end
+        subject.fulfill
+        expect(new_promise.value).to eql('foo')
+      end
+
       it 'returns a new promise that rejects to the reason' do
         new_promise = subject.fail { 'foo' }
         subject.reject
         expect(new_promise.value).to eql('foo')
         expect(new_promise).to be_fulfilled
+      end
+
+      it 'returns a new promise that rejects to the reason using #then' do
+        new_promise = subject.then do |on|
+          on.fail { 'foo' }
+        end
+        subject.reject
+        expect(new_promise.reason).to eql('foo')
       end
 
       it 'returns a new promise that mimics a promise value' do
@@ -129,9 +145,29 @@ module Whenner
         expect(new_promise.value).to eql(:a)
       end
 
+      it 'returns a new promise that mimics a promise value using #then' do
+        d = Deferred.new
+        new_promise = subject.then do |on|
+          on.done { d.promise }
+        end
+        subject.fulfill(:b)
+        d.fulfill(:a)
+        expect(new_promise.value).to eql(:a)
+      end
+
       it 'is rejected on exception' do
         called = false
         promise = subject.done { raise 'arg' }
+        promise.fail { |e| called = e }
+        subject.fulfill
+        expect(called).to be_a(RuntimeError)
+      end
+
+      it 'is rejected on exception using #then' do
+        called = false
+        promise = subject.then do |on|
+          on.done { raise 'arg' }
+        end
         promise.fail { |e| called = e }
         subject.fulfill
         expect(called).to be_a(RuntimeError)
