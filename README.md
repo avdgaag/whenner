@@ -112,8 +112,8 @@ for a detailed changelog.
 
 ### Credits
 
-Created by: Arjan van der Gaag
-URL: [http://arjanvandergaag.nl](http://arjanvandergaag.nl)
-Project homepage: [http://avdgaag.github.com/whenner](http://avdgaag.github.com/whenner)
-Date: april 2012
+Created by: Arjan van der Gaag  
+URL: [http://arjanvandergaag.nl](http://arjanvandergaag.nl)  
+Project homepage: [http://avdgaag.github.com/whenner](http://avdgaag.github.com/whenner)  
+Date: april 2012  
 License: [MIT-license](https://github.com/avdgaag/whenner/blob/master/LICENSE) (same as Ruby)
