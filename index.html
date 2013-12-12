@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Whenner : A simple promises implementation in Ruby." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Whenner</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/avdgaag/whenner">View on GitHub</a>
+
+          <h1 id="project_title">Whenner</h1>
+          <h2 id="project_tagline">A simple promises implementation in Ruby.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/avdgaag/whenner/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/avdgaag/whenner/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="whenner-" class="anchor" href="#whenner-"><span class="octicon octicon-link"></span></a>Whenner <a href="http://travis-ci.org/avdgaag/whenner"><img src="https://secure.travis-ci.org/avdgaag/whenner.png?branch=master" alt="Build Status"></a>
+</h1>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>A promise represents the eventual result of an asynchronous operation. The
+primary way of interacting with a promise is through its <code>done</code> and <code>fail</code>
+methods, which registers callbacks to receive either a promise’s eventual value
+or the reason why the promise cannot be fulfilled.</p>
+
+<h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Whenner is distributed as a Ruby gem, which should be installed on most Macs and
+Linux systems. Once you have ensured you have a working installation of Ruby
+and Ruby gems, install the gem as follows from the command line:</p>
+
+<pre><code>$ gem install whenner
+</code></pre>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Whenner provides two basic methods to use deferreds:</p>
+
+<ul>
+<li>
+<code>Whenner.defer</code> to create a new deferred object and return its promise. In the
+block to the method you can fulfill or reject the deferred.</li>
+<li>
+<code>Whenner.when</code> to convert one or more arguments into promises, combining them
+into a single new promise that you can attach callbacks to.</li>
+</ul><p>Deferred objects can give you a promise that, at some point in the future, will
+resolve to either a fulfilled or rejected state. When that happens, appropriate
+callbacks are called. You can attach such callbacks on a deferred or promise
+using three methods:</p>
+
+<ul>
+<li>
+<code>done</code> to register blocks to be called when the promise is fulfilled;</li>
+<li>
+<code>fail</code> to register blocks to be called when the promise is rejected;</li>
+<li>
+<code>always</code> to register blocks to be called when the promise is resolved (either
+fulfilled or rejected);</li>
+</ul><p>Here's an example of making three asynchronous HTTP requests, waiting for them
+all to finish and acting on their results:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="vg">$:</span><span class="o">.</span><span class="n">unshift</span> <span class="no">File</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s1">'../lib'</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">)</span>
+<span class="nb">require</span> <span class="s1">'whenner'</span>
+<span class="nb">require</span> <span class="s1">'uri'</span>
+<span class="nb">require</span> <span class="s1">'net/http'</span>
+
+<span class="kp">include</span> <span class="no">Whenner</span>
+
+<span class="k">def</span> <span class="nf">async_get</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+  <span class="n">defer</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="no">Thread</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span>
+      <span class="n">response</span> <span class="o">=</span> <span class="no">Net</span><span class="o">::</span><span class="no">HTTP</span><span class="o">.</span><span class="n">get_response</span><span class="p">(</span><span class="no">URI</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span>
+      <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">code</span> <span class="o">=~</span> <span class="sr">/^2/</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">fulfill</span> <span class="n">response</span><span class="o">.</span><span class="n">body</span>
+      <span class="k">else</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">reject</span> <span class="n">response</span><span class="o">.</span><span class="n">message</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="nb">at_exit</span> <span class="p">{</span> <span class="n">thread</span><span class="o">.</span><span class="n">join</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="n">cnn</span>     <span class="o">=</span> <span class="n">async_get</span><span class="p">(</span><span class="s1">'http://edition.cnn.com'</span><span class="p">)</span>
+<span class="n">nytimes</span> <span class="o">=</span> <span class="n">async_get</span><span class="p">(</span><span class="s1">'http://www.nytimes.com'</span><span class="p">)</span>
+<span class="n">google</span>  <span class="o">=</span> <span class="n">async_get</span><span class="p">(</span><span class="s1">'http://www.google.nl'</span><span class="p">)</span>
+
+<span class="no">Whenner</span><span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">cnn</span><span class="p">,</span> <span class="n">google</span><span class="p">,</span> <span class="n">nytimes</span><span class="p">)</span><span class="o">.</span><span class="n">done</span> <span class="k">do</span> <span class="o">|</span><span class="n">results</span><span class="o">|</span>
+  <span class="n">results</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">str</span><span class="o">|</span> <span class="n">str</span><span class="o">[</span><span class="sr">/&lt;title&gt;(.+)&lt;\/title&gt;/</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span> <span class="p">}</span>
+<span class="k">end</span><span class="o">.</span><span class="n">done</span> <span class="k">do</span> <span class="o">|</span><span class="n">titles</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="s2">"Success: </span><span class="si">#{</span><span class="n">titles</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>As methods in Ruby can only take a single block, Whenner does not support a
+<code>then</code> method yet, that would combine the <code>done</code> and <code>fail</code> methods. This might
+be implementing in the future using something like this:</p>
+
+<div class="highlight highlight-ruby"><pre><span class="n">defer</span> <span class="p">{</span> <span class="n">async_get</span><span class="p">(</span><span class="s1">'http://google.com'</span><span class="p">)</span> <span class="p">}</span><span class="o">.</span><span class="n">then</span> <span class="k">do</span> <span class="o">|</span><span class="n">on</span><span class="o">|</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">done</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s1">'Success!'</span> <span class="p">}</span>
+  <span class="n">on</span><span class="o">.</span><span class="n">fail</span> <span class="p">{</span> <span class="nb">puts</span> <span class="s1">'Success!'</span> <span class="p">}</span>
+<span class="k">end</span>
+</pre></div>
+
+<h3>
+<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h3>
+
+<p>See the inline <a href="http://rubydoc.info/github/avdgaag/whenner/master/frames">API
+docs</a> for more
+information.</p>
+
+<h2>
+<a name="other" class="anchor" href="#other"><span class="octicon octicon-link"></span></a>Other</h2>
+
+<h3>
+<a name="note-on-patchespull-requests" class="anchor" href="#note-on-patchespull-requests"><span class="octicon octicon-link"></span></a>Note on Patches/Pull Requests</h3>
+
+<ol>
+<li>Fork the project.</li>
+<li>Make your feature addition or bug fix.</li>
+<li>Add tests for it. This is important so I don't break it in a future version
+unintentionally.</li>
+<li>Commit, do not mess with rakefile, version, or history. (if you want to have
+your own version, that is fine but bump version in a commit by itself I can
+ignore when I pull)</li>
+<li>Send me a pull request. Bonus points for topic branches.</li>
+</ol><h3>
+<a name="issues" class="anchor" href="#issues"><span class="octicon octicon-link"></span></a>Issues</h3>
+
+<p>Please report any issues, defects or suggestions in the <a href="https://github.com/avdgaag/whenner/issues">Github issue
+tracker</a>.</p>
+
+<h3>
+<a name="what-has-changed" class="anchor" href="#what-has-changed"><span class="octicon octicon-link"></span></a>What has changed?</h3>
+
+<p>See the <a href="https://github.com/avdgaag/whenner/blob/master/HISTORY.md">HISTORY</a> file
+for a detailed changelog.</p>
+
+<h3>
+<a name="credits" class="anchor" href="#credits"><span class="octicon octicon-link"></span></a>Credits</h3>
+
+<p>Created by: Arjan van der Gaag<br>
+URL: <a href="http://arjanvandergaag.nl">http://arjanvandergaag.nl</a><br>
+Project homepage: <a href="http://avdgaag.github.com/whenner">http://avdgaag.github.com/whenner</a><br>
+Date: april 2012<br>
+License: <a href="https://github.com/avdgaag/whenner/blob/master/LICENSE">MIT-license</a> (same as Ruby)</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Whenner maintained by <a href="https://github.com/avdgaag">avdgaag</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-20357800-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
