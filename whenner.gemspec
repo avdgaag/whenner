@@ -3,7 +3,7 @@ require File.expand_path('../lib/whenner/version', __FILE__)
 
 Gem::Specification.new do |s|
   # Metadata
-  s.name        = 'Whenner'
+  s.name        = 'whenner'
   s.version     = Whenner::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Arjan van der Gaag']

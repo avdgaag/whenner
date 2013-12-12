@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    Whenner (0.1.0)
+    whenner (0.1.1)
 
 GEM
   remote: https://rubygems.org/
@@ -23,8 +23,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  Whenner!
   kramdown
   rake
   rspec
+  whenner!
   yard
