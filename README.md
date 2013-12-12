@@ -17,7 +17,69 @@ and Ruby gems, install the gem as follows from the command line:
 
 ## Usage
 
-TODO usage
+Whenner provides two basic methods to use deferreds:
+
+* `Whenner.defer` to create a new deferred object and return its promise. In the
+  block to the method you can fulfill or reject the deferred.
+* `Whenner.when` to convert one or more arguments into promises, combining them
+  into a single new promise that you can attach callbacks to.
+
+Deferred objects can give you a promise that, at some point in the future, will
+resolve to either a fulfilled or rejected state. When that happens, appropriate
+callbacks are called. You can attach such callbacks on a deferred or promise
+using three methods:
+
+* `done` to register blocks to be called when the promise is fulfilled;
+* `fail` to register blocks to be called when the promise is rejected;
+* `always` to register blocks to be called when the promise is resolved (either
+  fulfilled or rejected);
+
+Here's an example of making three asynchronous HTTP requests, waiting for them
+all to finish and acting on their results:
+
+```ruby
+$:.unshift File.expand_path('../lib', __FILE__)
+require 'whenner'
+require 'uri'
+require 'net/http'
+
+include Whenner
+
+def async_get(uri)
+  defer do |f|
+    thread = Thread.new do
+      response = Net::HTTP.get_response(URI(uri))
+      if response.code =~ /^2/
+        f.fulfill response.body
+      else
+        f.reject response.message
+      end
+    end
+    at_exit { thread.join }
+  end
+end
+
+cnn     = async_get('http://edition.cnn.com')
+nytimes = async_get('http://www.nytimes.com')
+google  = async_get('http://www.google.nl')
+
+Whenner.when(cnn, google, nytimes).done do |results|
+  results.map { |str| str[/<title>(.+)<\/title>/, 1] }
+end.done do |titles|
+  puts "Success: #{titles.inspect}"
+end
+```
+
+As methods in Ruby can only take a single block, Whenner does not support a
+`then` method yet, that would combine the `done` and `fail` methods. This might
+be implementing in the future using something like this:
+
+```ruby
+defer { async_get('http://google.com') }.then do |on|
+  on.done { puts 'Success!' }
+  on.fail { puts 'Success!' }
+end
+```
 
 ### Documentation
 
