@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    whenner (0.1.1)
+    whenner (0.2.0)
 
 GEM
   remote: https://rubygems.org/
